@@ -31,10 +31,7 @@ import androidx.test.espresso.Espresso.openActionBarOverflowOrOptionsMenu
 import androidx.test.espresso.action.ViewActions.click
 import androidx.test.espresso.assertion.ViewAssertions.doesNotExist
 import androidx.test.espresso.assertion.ViewAssertions.matches
-import androidx.test.espresso.matcher.ViewMatchers.hasSibling
-import androidx.test.espresso.matcher.ViewMatchers.isDisplayed
-import androidx.test.espresso.matcher.ViewMatchers.withId
-import androidx.test.espresso.matcher.ViewMatchers.withText
+import androidx.test.espresso.matcher.ViewMatchers.*
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.MediumTest
 import com.example.android.architecture.blueprints.todoapp.R
@@ -324,10 +321,69 @@ class TasksFragmentTest {
 
         // THEN - Verify that we navigate to the add screen
         verify(navController).navigate(
-            TasksFragmentDirections.actionTasksFragmentToAddEditTaskFragment(
-                null, getApplicationContext<Context>().getString(R.string.add_task)
-            )
+                TasksFragmentDirections.actionTasksFragmentToAddEditTaskFragment(
+                        null, getApplicationContext<Context>().getString(R.string.add_task)
+                )
         )
+    }
+
+    @Test
+    fun sortByPriorityAsDefault() {
+        // Add 2 active tasks and one completed task
+        repository.saveTaskBlocking(Task("TITLE1", "DESCRIPTION1"))
+        repository.saveTaskBlocking(Task("TITLE2", "DESCRIPTION2"))
+        repository.saveTaskBlocking(Task("TITLE3", "DESCRIPTION3", true))
+
+        launchActivity()
+
+        // Verify that the active tasks are shown
+        onView(withText("TITLE1")).check(matches(isDisplayed()))
+        onView(withText("TITLE2")).check(matches(isDisplayed()))
+
+        // Verify that the default sort is Default
+        onView(withText("Task Priority")).check(matches(isDisplayed()))
+    }
+
+    @Test
+    fun sortByAlpha() {
+        // Add 2 active tasks and one completed task
+        repository.saveTaskBlocking(Task("TITLE1", "DESCRIPTION1"))
+        repository.saveTaskBlocking(Task("TITLE2", "DESCRIPTION2"))
+        repository.saveTaskBlocking(Task("TITLE3", "DESCRIPTION3", true))
+
+        launchActivity()
+
+        // Verify that the active tasks are shown
+        onView(withText("TITLE1")).check(matches(isDisplayed()))
+        onView(withText("TITLE2")).check(matches(isDisplayed()))
+
+        // Change sort to Alphabetical
+        onView(withId(R.id.menu_sort)).perform(click())
+        onView(withText(R.string.alpha_sort)).perform(click())
+
+        // Verify that the default sort is Default
+        onView(withText("Alphabetically")).check(matches(isDisplayed()))
+    }
+
+    @Test
+    fun sortByDefault() {
+        // Add 2 active tasks and one completed task
+        repository.saveTaskBlocking(Task("TITLE1", "DESCRIPTION1"))
+        repository.saveTaskBlocking(Task("TITLE2", "DESCRIPTION2"))
+        repository.saveTaskBlocking(Task("TITLE3", "DESCRIPTION3", true))
+
+        launchActivity()
+
+        // Verify that the active tasks are shown
+        onView(withText("TITLE1")).check(matches(isDisplayed()))
+        onView(withText("TITLE2")).check(matches(isDisplayed()))
+
+        // Change sort to Default
+        onView(withId(R.id.menu_sort)).perform(click())
+        onView(withText(R.string.default_sort)).perform(click())
+
+        // Verify that the default sort is Default
+        onView(withText("Default")).check(matches(isDisplayed()))
     }
 
     private fun launchActivity(): ActivityScenario<TasksActivity>? {
