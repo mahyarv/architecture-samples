@@ -22,6 +22,7 @@ import com.example.android.architecture.blueprints.todoapp.MainCoroutineRule
 import com.example.android.architecture.blueprints.todoapp.R
 import com.example.android.architecture.blueprints.todoapp.assertLiveDataEventTriggered
 import com.example.android.architecture.blueprints.todoapp.assertSnackbarMessage
+import com.example.android.architecture.blueprints.todoapp.data.Priority
 import com.example.android.architecture.blueprints.todoapp.data.Task
 import com.example.android.architecture.blueprints.todoapp.data.source.FakeRepository
 import com.example.android.architecture.blueprints.todoapp.getOrAwaitValue
@@ -29,6 +30,7 @@ import com.example.android.architecture.blueprints.todoapp.observeForTesting
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runBlockingTest
+import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -58,9 +60,9 @@ class TasksViewModelTest {
     fun setupViewModel() {
         // We initialise the tasks to 3, with one active and two completed
         tasksRepository = FakeRepository()
-        val task1 = Task("Title1", "Description1")
-        val task2 = Task("Title2", "Description2", true)
-        val task3 = Task("Title3", "Description3", true)
+        val task1 = Task("Title1", "Description1", priority = Priority.HIGH)
+        val task2 = Task("Title2", "Description2", true, priority = Priority.LOW)
+        val task3 = Task("Title3", "Description3", true, priority = Priority.MEDIUM)
         tasksRepository.addTasks(task1, task2, task3)
 
         tasksViewModel = TasksViewModel(tasksRepository, SavedStateHandle())
@@ -193,7 +195,7 @@ class TasksViewModelTest {
 
         // Verify snackbar is updated
         assertSnackbarMessage(
-            tasksViewModel.snackbarText, R.string.completed_tasks_cleared
+                tasksViewModel.snackbarText, R.string.completed_tasks_cleared
         )
     }
 
@@ -204,7 +206,7 @@ class TasksViewModelTest {
 
         // The snackbar is updated
         assertSnackbarMessage(
-            tasksViewModel.snackbarText, R.string.successfully_saved_task_message
+                tasksViewModel.snackbarText, R.string.successfully_saved_task_message
         )
     }
 
@@ -215,7 +217,7 @@ class TasksViewModelTest {
 
         // The snackbar is updated
         assertSnackbarMessage(
-            tasksViewModel.snackbarText, R.string.successfully_added_task_message
+                tasksViewModel.snackbarText, R.string.successfully_added_task_message
         )
     }
 
@@ -242,7 +244,7 @@ class TasksViewModelTest {
 
         // The snackbar is updated
         assertSnackbarMessage(
-            tasksViewModel.snackbarText, R.string.task_marked_complete
+                tasksViewModel.snackbarText, R.string.task_marked_complete
         )
     }
 
@@ -260,7 +262,7 @@ class TasksViewModelTest {
 
         // The snackbar is updated
         assertSnackbarMessage(
-            tasksViewModel.snackbarText, R.string.task_marked_active
+                tasksViewModel.snackbarText, R.string.task_marked_active
         )
     }
 
@@ -271,5 +273,113 @@ class TasksViewModelTest {
 
         // Then the "Add task" action is visible
         assertThat(tasksViewModel.tasksAddViewVisible.getOrAwaitValue()).isTrue()
+    }
+
+    @Test
+    fun sortTasks_Alpha() {
+        // Pause dispatcher so we can verify initial values
+        mainCoroutineRule.pauseDispatcher()
+
+        // Given an initialized TasksViewModel with initialized tasks
+        // When loading of Tasks is requested
+        tasksViewModel.setFiltering(TasksFilterType.ALL_TASKS)
+
+        // Sort Tasks
+        tasksViewModel.setSort(TasksSortType.ALPHABETICALLY)
+
+        // Trigger loading of tasks
+        tasksViewModel.loadTasks(true)
+
+        // Observe the items to keep LiveData emitting
+        tasksViewModel.items.observeForTesting {
+
+            // Then progress indicator is shown
+            assertThat(tasksViewModel.dataLoading.getOrAwaitValue()).isTrue()
+
+            // Execute pending coroutines actions
+            mainCoroutineRule.resumeDispatcher()
+
+            // Then progress indicator is hidden
+            assertThat(tasksViewModel.dataLoading.getOrAwaitValue()).isFalse()
+
+            // And data correctly loaded
+            val items = tasksViewModel.items.getOrAwaitValue()
+            assertThat(items).hasSize(3)
+            assertEquals(items[0].title, "Title1")
+            assertEquals(items[1].title, "Title2")
+            assertEquals(items[2].title, "Title3")
+        }
+    }
+
+    @Test
+    fun sortTasks_Priority() {
+        // Pause dispatcher so we can verify initial values
+        mainCoroutineRule.pauseDispatcher()
+
+        // Given an initialized TasksViewModel with initialized tasks
+        // When loading of Tasks is requested
+        tasksViewModel.setFiltering(TasksFilterType.ALL_TASKS)
+
+        // Sort Tasks
+        tasksViewModel.setSort(TasksSortType.TASK_PRIORITY)
+
+        // Trigger loading of tasks
+        tasksViewModel.loadTasks(true)
+
+        // Observe the items to keep LiveData emitting
+        tasksViewModel.items.observeForTesting {
+
+            // Then progress indicator is shown
+            assertThat(tasksViewModel.dataLoading.getOrAwaitValue()).isTrue()
+
+            // Execute pending coroutines actions
+            mainCoroutineRule.resumeDispatcher()
+
+            // Then progress indicator is hidden
+            assertThat(tasksViewModel.dataLoading.getOrAwaitValue()).isFalse()
+
+            // And data correctly loaded
+            val items = tasksViewModel.items.getOrAwaitValue()
+            assertThat(items).hasSize(3)
+            assertEquals(items[0].title, "Title1")
+            assertEquals(items[1].title, "Title3")
+            assertEquals(items[2].title, "Title2")
+        }
+    }
+
+    @Test
+    fun sortTasks_Default() {
+        // Pause dispatcher so we can verify initial values
+        mainCoroutineRule.pauseDispatcher()
+
+        // Given an initialized TasksViewModel with initialized tasks
+        // When loading of Tasks is requested
+        tasksViewModel.setFiltering(TasksFilterType.ALL_TASKS)
+
+        // Sort Tasks
+        tasksViewModel.setSort(TasksSortType.DEFAULT)
+
+        // Trigger loading of tasks
+        tasksViewModel.loadTasks(true)
+
+        // Observe the items to keep LiveData emitting
+        tasksViewModel.items.observeForTesting {
+
+            // Then progress indicator is shown
+            assertThat(tasksViewModel.dataLoading.getOrAwaitValue()).isTrue()
+
+            // Execute pending coroutines actions
+            mainCoroutineRule.resumeDispatcher()
+
+            // Then progress indicator is hidden
+            assertThat(tasksViewModel.dataLoading.getOrAwaitValue()).isFalse()
+
+            // And data correctly loaded
+            val items = tasksViewModel.items.getOrAwaitValue()
+            assertThat(items).hasSize(3)
+            assertEquals(items[0].title, "Title1")
+            assertEquals(items[1].title, "Title2")
+            assertEquals(items[2].title, "Title3")
+        }
     }
 }

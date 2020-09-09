@@ -36,6 +36,8 @@ import com.example.android.architecture.blueprints.todoapp.tasks.TasksFilterType
 import com.example.android.architecture.blueprints.todoapp.tasks.TasksFilterType.ALL_TASKS
 import com.example.android.architecture.blueprints.todoapp.tasks.TasksFilterType.COMPLETED_TASKS
 import kotlinx.coroutines.launch
+import java.util.*
+import kotlin.collections.ArrayList
 
 /**
  * ViewModel for the task list screen.
@@ -227,10 +229,10 @@ class TasksViewModel(
     private fun sortTasks(tasks: List<Task>, tasksSortType: TasksSortType): List<Task> {
         return when (tasksSortType) {
             TasksSortType.TASK_PRIORITY -> {
-                tasks.sortedBy { it.priority }
+                tasks.sortedByDescending { it.priority }
             }
             TasksSortType.ALPHABETICALLY -> {
-                tasks.sortedBy { it.title }
+                tasks.sortedBy { it.title.toLowerCase(Locale.getDefault()) }
             }
             TasksSortType.DEFAULT -> {
                 tasks

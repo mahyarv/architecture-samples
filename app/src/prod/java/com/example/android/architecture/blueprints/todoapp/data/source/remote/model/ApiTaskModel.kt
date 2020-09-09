@@ -8,13 +8,3 @@ data class ApiTaskModel(
         val completed: Boolean?,
         val priority: String?
 )
-
-//{
-//    "idInternal" : 1,
-//    "id" : "123",
-//    "user" : "user1",
-//    "title" : "Spring cleaning",
-//    "description" : "Remember to scrub the bathroom floors.",
-//    "completed" : false,
-//    "priority" : "HIGH"
-//}

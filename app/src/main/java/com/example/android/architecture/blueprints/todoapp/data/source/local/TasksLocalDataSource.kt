@@ -79,6 +79,10 @@ class TasksLocalDataSource internal constructor(
         tasksDao.insertTask(task)
     }
 
+    override suspend fun saveTasks(tasks: List<Task>) {
+        // NO-OP
+    }
+
     override suspend fun completeTask(task: Task) = withContext(ioDispatcher) {
         tasksDao.updateCompleted(task.id, true)
     }

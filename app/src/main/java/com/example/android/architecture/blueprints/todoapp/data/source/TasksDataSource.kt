@@ -38,6 +38,8 @@ interface TasksDataSource {
 
     suspend fun saveTask(task: Task)
 
+    suspend fun saveTasks(tasks: List<Task>)
+
     suspend fun completeTask(task: Task)
 
     suspend fun completeTask(taskId: String)

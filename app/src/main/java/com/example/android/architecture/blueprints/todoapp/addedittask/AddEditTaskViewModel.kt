@@ -116,6 +116,10 @@ class AddEditTaskViewModel(
             _snackbarText.value = Event(R.string.empty_task_message)
             return
         }
+        if (currentPriority == null) {
+            _snackbarText.value = Event(R.string.empty_priority_message)
+            return
+        }
         if (Task(currentTitle, currentDescription).isEmpty) {
             _snackbarText.value = Event(R.string.empty_task_message)
             return

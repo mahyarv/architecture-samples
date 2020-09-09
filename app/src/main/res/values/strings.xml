@@ -46,6 +46,7 @@
     <string name="priority_sort">Priority Sort</string>
     <string name="alpha_sort">Alpha Sort</string>
     <string name="default_sort">Default Sort</string>
+    <string name="empty_priority_message">Priority must be set</string>
 
     <string-array name="list_tasks_array">
         <item>@string/nav_all</item>

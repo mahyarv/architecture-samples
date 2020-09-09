@@ -25,10 +25,7 @@ import com.example.android.architecture.blueprints.todoapp.data.Result.Success
 import com.example.android.architecture.blueprints.todoapp.data.Task
 import com.example.android.architecture.blueprints.todoapp.data.source.TasksDataSource
 import com.example.android.architecture.blueprints.todoapp.data.source.remote.converter.TasksConverter
-import com.example.android.architecture.blueprints.todoapp.data.source.remote.model.ApiTaskModel
 import com.example.android.architecture.blueprints.todoapp.data.source.remote.rest.TasksApi
-import kotlinx.coroutines.delay
-import retrofit2.Callback
 
 /**
  * Implementation of the data source that adds a latency simulating network.
@@ -64,28 +61,53 @@ class TasksRemoteDataSource(private val tasksApi: TasksApi = ServiceLocator.buil
     }
 
     override suspend fun getTasks(): Result<List<Task>> {
-        val tasks = tasksApi.getAllTasks(USER_ID).mapNotNull { TasksConverter.convertApiTaskToLocalTaskModel(it) }
-        return Success(tasks)
+        return try {
+            val tasks = tasksApi.getAllTasks(USER_ID).mapNotNull { TasksConverter.convertApiTaskToLocalTaskModel(it) }
+            Success(tasks)
+        } catch (exception: Exception) {
+            Error(exception)
+        }
     }
 
     override suspend fun getTask(taskId: String): Result<Task> {
-        // Simulate network by delaying the execution.
-//        delay(SERVICE_LATENCY_IN_MILLIS)
-//        TASKS_SERVICE_DATA[taskId]?.let {
-//            return Success(it)
-//        }
-        return Error(Exception("Task not found"))
+        return try {
+            val task = tasksApi.getAllTasks(USER_ID).mapNotNull { TasksConverter.convertApiTaskToLocalTaskModel(it) }.findLast { it.id == taskId }
+            return if (task != null) {
+                Success(task)
+            } else {
+                Error(Exception("Task not found"))
+            }
+        } catch (exception: Exception) {
+            Error(exception)
+        }
     }
 
 
     override suspend fun saveTask(task: Task) {
-        val apiTaskModel = TasksConverter.convertLocalTaskToApiTaskModel(task, USER_ID)
-        tasksApi.addTask(USER_ID, listOf(apiTaskModel))
+        try {
+            val apiTaskModel = TasksConverter.convertLocalTaskToApiTaskModel(task, USER_ID)
+            tasksApi.addTask(USER_ID, listOf(apiTaskModel))
+        } catch (exception: Exception) {
+            // handle error
+        }
+    }
+
+    override suspend fun saveTasks(tasks: List<Task>) {
+        try {
+            val apiTaskModels = tasks.map { TasksConverter.convertLocalTaskToApiTaskModel(it, USER_ID) }
+            tasksApi.addTask(USER_ID, apiTaskModels)
+        } catch (exception: Exception) {
+            // handle error
+        }
     }
 
     override suspend fun completeTask(task: Task) {
-        val apiTaskModel = TasksConverter.convertLocalTaskToApiTaskModel(task, USER_ID, true)
-        tasksApi.addTask(USER_ID, listOf(apiTaskModel))
+        try {
+            val apiTaskModel = TasksConverter.convertLocalTaskToApiTaskModel(task, USER_ID, true)
+            tasksApi.addTask(USER_ID, listOf(apiTaskModel))
+        } catch (exception: Exception) {
+            // handle error
+        }
     }
 
     override suspend fun completeTask(taskId: String) {
@@ -93,8 +115,12 @@ class TasksRemoteDataSource(private val tasksApi: TasksApi = ServiceLocator.buil
     }
 
     override suspend fun activateTask(task: Task) {
-        val apiTaskModel = TasksConverter.convertLocalTaskToApiTaskModel(task, USER_ID, false)
-        tasksApi.addTask(USER_ID, listOf(apiTaskModel))
+        try {
+            val apiTaskModel = TasksConverter.convertLocalTaskToApiTaskModel(task, USER_ID, false)
+            tasksApi.addTask(USER_ID, listOf(apiTaskModel))
+        } catch (exception: Exception) {
+            // handle error
+        }
     }
 
     override suspend fun activateTask(taskId: String) {
@@ -102,21 +128,37 @@ class TasksRemoteDataSource(private val tasksApi: TasksApi = ServiceLocator.buil
     }
 
     override suspend fun clearCompletedTasks() {
-//        TASKS_SERVICE_DATA = TASKS_SERVICE_DATA.filterValues {
-//            !it.isCompleted
-//        } as LinkedHashMap<String, Task>
+        try {
+            val tasks = tasksApi.getAllTasks(USER_ID).mapNotNull { TasksConverter.convertApiTaskToLocalTaskModel(it) }
+            val taskIdsToDelete = tasks.filter { it.isCompleted }.joinToString { it.id }
+            tasksApi.deleteTask(USER_ID, taskIdsToDelete)
+        } catch (exception: Exception) {
+            // handle error
+        }
     }
 
     override suspend fun deleteAllTasks() {
-        // TASKS_SERVICE_DATA.clear()
-        val tasks = tasksApi.getAllTasks(USER_ID).mapNotNull { TasksConverter.convertApiTaskToLocalTaskModel(it) }
-        // todo delete all
+        try {
+            val tasks = tasksApi.getAllTasks(USER_ID).mapNotNull { TasksConverter.convertApiTaskToLocalTaskModel(it) }
+            val taskIdsToDelete = tasks.joinToString { it.id }
+            tasksApi.deleteTask(USER_ID, taskIdsToDelete)
+        } catch (exception: Exception) {
+            // handle error
+        }
 
     }
 
     override suspend fun deleteTask(taskId: String) {
-        tasksApi.deleteTask(USER_ID, taskId)
+        try {
+            tasksApi.deleteTask(USER_ID, taskId)
+        } catch (exception: Exception) {
+            // handle error
+        }
     }
 }
 
+/**
+ * This is a hardcoded ID that should not be used in prod.
+ * Instead, a unique ID should be used based on device and/or user credentials
+ */
 private const val USER_ID = "user2"

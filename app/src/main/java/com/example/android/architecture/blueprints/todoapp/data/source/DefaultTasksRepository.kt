@@ -41,7 +41,7 @@ class DefaultTasksRepository(
 
             if (forceUpdate) {
                 try {
-                    updateTasksFromRemoteDataSource()
+                    syncTasksToRemoteDataSource()
                 } catch (ex: Exception) {
                     return Result.Error(ex)
                 }
@@ -51,7 +51,7 @@ class DefaultTasksRepository(
     }
 
     override suspend fun refreshTasks() {
-        updateTasksFromRemoteDataSource()
+        syncTasksToRemoteDataSource()
     }
 
     override fun observeTasks(): LiveData<Result<List<Task>>> {
@@ -71,7 +71,18 @@ class DefaultTasksRepository(
                 tasksLocalDataSource.saveTask(task)
             }
         } else if (remoteTasks is Result.Error) {
-            throw remoteTasks.exception
+            // throw remoteTasks.exception
+            // properly handle fallback and retry logic based on exception
+        }
+    }
+
+    private suspend fun syncTasksToRemoteDataSource() {
+        val localTasks = tasksLocalDataSource.getTasks()
+
+        if (localTasks is Success) {
+            tasksRemoteDataSource.saveTasks(localTasks.data)
+        } else if (localTasks is Result.Error) {
+            // properly handle fallback and retry logic based on exception
         }
     }
 

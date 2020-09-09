@@ -41,6 +41,10 @@ class FakeDataSource(var tasks: MutableList<Task>? = mutableListOf()) : TasksDat
         tasks?.add(task)
     }
 
+    override suspend fun saveTasks(tasks: List<Task>) {
+        this.tasks?.addAll(tasks)
+    }
+
     override suspend fun completeTask(task: Task) {
         tasks?.firstOrNull { it.id == task.id }?.let { it.isCompleted = true }
     }

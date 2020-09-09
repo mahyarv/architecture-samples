@@ -19,6 +19,7 @@ import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import com.example.android.architecture.blueprints.todoapp.MainCoroutineRule
 import com.example.android.architecture.blueprints.todoapp.R.string
 import com.example.android.architecture.blueprints.todoapp.assertSnackbarMessage
+import com.example.android.architecture.blueprints.todoapp.data.Priority
 import com.example.android.architecture.blueprints.todoapp.data.Task
 import com.example.android.architecture.blueprints.todoapp.data.source.FakeRepository
 import com.example.android.architecture.blueprints.todoapp.getOrAwaitValue
@@ -49,7 +50,7 @@ class AddEditTaskViewModelTest {
     @get:Rule
     var instantExecutorRule = InstantTaskExecutorRule()
 
-    private val task = Task("Title1", "Description1")
+    private val task = Task("Title1", "Description1", priority = Priority.MEDIUM)
 
     @Before
     fun setupViewModel() {
@@ -64,9 +65,11 @@ class AddEditTaskViewModelTest {
     fun saveNewTaskToRepository_showsSuccessMessageUi() {
         val newTitle = "New Task Title"
         val newDescription = "Some Task Description"
+        val priorityVal = Priority.MEDIUM
         (addEditTaskViewModel).apply {
             title.value = newTitle
             description.value = newDescription
+            priority.value = priorityVal.priority
         }
         addEditTaskViewModel.saveTask()
 
@@ -75,6 +78,7 @@ class AddEditTaskViewModelTest {
         // Then a task is saved in the repository and the view updated
         assertThat(newTask.title).isEqualTo(newTitle)
         assertThat(newTask.description).isEqualTo(newDescription)
+        assertThat(newTask.priority).isEqualTo(priorityVal)
     }
 
     @Test
@@ -106,49 +110,56 @@ class AddEditTaskViewModelTest {
         // Verify a task is loaded
         assertThat(addEditTaskViewModel.title.getOrAwaitValue()).isEqualTo(task.title)
         assertThat(addEditTaskViewModel.description.getOrAwaitValue()).isEqualTo(task.description)
+        assertThat(addEditTaskViewModel.priority.getOrAwaitValue()).isEqualTo(task.priority.priority)
         assertThat(addEditTaskViewModel.dataLoading.getOrAwaitValue()).isFalse()
     }
 
     @Test
     fun saveNewTaskToRepository_emptyTitle_error() {
-        saveTaskAndAssertSnackbarError("", "Some Task Description")
+        saveTaskAndAssertSnackbarError("", "Some Task Description", Priority.MEDIUM)
     }
 
     @Test
     fun saveNewTaskToRepository_nullTitle_error() {
-        saveTaskAndAssertSnackbarError(null, "Some Task Description")
+        saveTaskAndAssertSnackbarError(null, "Some Task Description", Priority.MEDIUM)
     }
 
     @Test
     fun saveNewTaskToRepository_emptyDescription_error() {
-        saveTaskAndAssertSnackbarError("Title", "")
+        saveTaskAndAssertSnackbarError("Title", "", Priority.MEDIUM)
     }
 
     @Test
     fun saveNewTaskToRepository_nullDescription_error() {
-        saveTaskAndAssertSnackbarError("Title", null)
+        saveTaskAndAssertSnackbarError("Title", null, Priority.MEDIUM)
     }
 
     @Test
     fun saveNewTaskToRepository_nullDescriptionNullTitle_error() {
-        saveTaskAndAssertSnackbarError(null, null)
+        saveTaskAndAssertSnackbarError(null, null, Priority.MEDIUM)
     }
 
     @Test
     fun saveNewTaskToRepository_emptyDescriptionEmptyTitle_error() {
-        saveTaskAndAssertSnackbarError("", "")
+        saveTaskAndAssertSnackbarError("", "", Priority.MEDIUM)
     }
 
-    private fun saveTaskAndAssertSnackbarError(title: String?, description: String?) {
+    @Test
+    fun saveNewTaskToRepository_nullPriority_error() {
+        saveTaskAndAssertSnackbarError("Title", "Description", null, string.empty_priority_message)
+    }
+
+    private fun saveTaskAndAssertSnackbarError(title: String?, description: String?, priority: Priority?, snackBarMessageId: Int = string.empty_task_message) {
         (addEditTaskViewModel).apply {
             this.title.value = title
             this.description.value = description
+            this.priority.value = priority?.priority
         }
 
         // When saving an incomplete task
         addEditTaskViewModel.saveTask()
 
         // Then the snackbar shows an error
-        assertSnackbarMessage(addEditTaskViewModel.snackbarText, string.empty_task_message)
+        assertSnackbarMessage(addEditTaskViewModel.snackbarText, snackBarMessageId)
     }
 }

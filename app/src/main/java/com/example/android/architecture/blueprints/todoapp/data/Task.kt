@@ -19,7 +19,7 @@ import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import androidx.room.TypeConverter
-import java.util.UUID
+import java.util.*
 
 /**
  * Immutable model class for a Task. In order to compile with Room, we can't use @JvmOverloads to
@@ -52,7 +52,7 @@ data class Task @JvmOverloads constructor(
         get() = priority
 }
 
-enum class Priority(priority: Int) {
+enum class Priority(val priority: Int) {
     LOW(0),
     MEDIUM(1),
     HIGH(2)
@@ -66,7 +66,7 @@ class PriorityConverter {
     }
 
     @TypeConverter
-    fun toPriority(value: Int?): Priority {
+    fun toPriority(value: Int?): Priority? {
         return when (value) {
             0 -> {
                 Priority.LOW
@@ -78,14 +78,13 @@ class PriorityConverter {
                 Priority.HIGH
             }
             else -> {
-                Priority.LOW
+                null
             }
         }
     }
 
     fun toPriority(value: String): Priority {
-        val string = value.toLowerCase()
-        return when (string) {
+        return when (value.toLowerCase(Locale.getDefault())) {
             "low" -> {
                 Priority.LOW
             }
