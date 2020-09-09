@@ -79,7 +79,7 @@ class TasksFragment : Fragment() {
                 true
             }
             R.id.menu_sort -> {
-                showSortPopIpMenu()
+                showSortPopUpMenu()
                 true
             }
             else -> false
@@ -136,7 +136,7 @@ class TasksFragment : Fragment() {
         }
     }
 
-    private fun showSortPopIpMenu() {
+    private fun showSortPopUpMenu() {
         val view = activity?.findViewById<View>(R.id.menu_sort) ?: return
         PopupMenu(requireContext(), view).run {
             menuInflater.inflate(R.menu.sort_tasks, menu)

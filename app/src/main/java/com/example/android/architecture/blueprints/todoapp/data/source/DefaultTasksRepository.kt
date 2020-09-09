@@ -66,7 +66,7 @@ class DefaultTasksRepository(
         val remoteTasks = tasksRemoteDataSource.getTasks()
 
         if (remoteTasks is Success) {
-            // Real apps might want to do a proper twp-way sync, deleting, modifying or adding each task.
+            // Real apps might want to do a proper two-way sync, deleting, modifying or adding each task.
             remoteTasks.data.forEach { task ->
                 tasksLocalDataSource.saveTask(task)
             }
