@@ -22,6 +22,7 @@ import androidx.test.core.app.ApplicationProvider.getApplicationContext
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.example.android.architecture.blueprints.todoapp.MainCoroutineRule
+import com.example.android.architecture.blueprints.todoapp.data.Priority
 import com.example.android.architecture.blueprints.todoapp.data.Task
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runBlockingTest
@@ -87,7 +88,7 @@ class TasksDaoTest {
         database.taskDao().insertTask(task)
 
         // When a task with the same id is inserted
-        val newTask = Task("title2", "description2", true, task.id)
+        val newTask = Task("title2", "description2", true, task.priority, task.id)
         database.taskDao().insertTask(newTask)
 
         // THEN - The loaded data contains the expected values
@@ -122,7 +123,7 @@ class TasksDaoTest {
         database.taskDao().insertTask(originalTask)
 
         // When the task is updated
-        val updatedTask = Task("new title", "new description", true, originalTask.id)
+        val updatedTask = Task("new title", "new description", true, Priority.MEDIUM, originalTask.id)
         database.taskDao().updateTask(updatedTask)
 
         // THEN - The loaded data contains the expected values
@@ -131,6 +132,7 @@ class TasksDaoTest {
         assertThat(loaded?.title, `is`("new title"))
         assertThat(loaded?.description, `is`("new description"))
         assertThat(loaded?.isCompleted, `is`(true))
+        assertThat(loaded?.priority, `is`(Priority.MEDIUM))
     }
 
     @Test

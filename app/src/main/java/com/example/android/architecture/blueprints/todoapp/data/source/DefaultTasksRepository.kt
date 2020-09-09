@@ -30,9 +30,9 @@ import kotlinx.coroutines.withContext
  * Default implementation of [TasksRepository]. Single entry point for managing tasks' data.
  */
 class DefaultTasksRepository(
-    private val tasksRemoteDataSource: TasksDataSource,
-    private val tasksLocalDataSource: TasksDataSource,
-    private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO
+        private val tasksRemoteDataSource: TasksDataSource,
+        private val tasksLocalDataSource: TasksDataSource,
+        private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO
 ) : TasksRepository {
 
     override suspend fun getTasks(forceUpdate: Boolean): Result<List<Task>> {
@@ -66,11 +66,9 @@ class DefaultTasksRepository(
         val remoteTasks = tasksRemoteDataSource.getTasks()
 
         if (remoteTasks is Success) {
-            // Real apps might want to do a proper sync, deleting, modifying or adding each task.
-           // tasksLocalDataSource.deleteAllTasks()
+            // Real apps might want to do a proper twp-way sync, deleting, modifying or adding each task.
             remoteTasks.data.forEach { task ->
-                // tasksLocalDataSource.saveTask(task)
-                // todo add saving locally if new
+                tasksLocalDataSource.saveTask(task)
             }
         } else if (remoteTasks is Result.Error) {
             throw remoteTasks.exception

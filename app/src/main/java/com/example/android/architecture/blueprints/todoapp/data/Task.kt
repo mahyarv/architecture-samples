@@ -82,4 +82,22 @@ class PriorityConverter {
             }
         }
     }
+
+    fun toPriority(value: String): Priority {
+        val string = value.toLowerCase()
+        return when (string) {
+            "low" -> {
+                Priority.LOW
+            }
+            "medium" -> {
+                Priority.MEDIUM
+            }
+            "high" -> {
+                Priority.HIGH
+            }
+            else -> {
+                Priority.LOW
+            }
+        }
+    }
 }

@@ -62,7 +62,7 @@ class FakeRepository : TasksRepository {
                 is Error -> Error(tasks.exception)
                 is Success -> {
                     val task = tasks.data.firstOrNull() { it.id == taskId }
-                        ?: return@map Error(Exception("Not found"))
+                            ?: return@map Error(Exception("Not found"))
                     Success(task)
                 }
             }
@@ -91,7 +91,7 @@ class FakeRepository : TasksRepository {
     }
 
     override suspend fun completeTask(task: Task) {
-        val completedTask = Task(task.title, task.description, true, task.id)
+        val completedTask = Task(task.title, task.description, true, task.priority, task.id)
         tasksServiceData[task.id] = completedTask
     }
 
@@ -101,7 +101,7 @@ class FakeRepository : TasksRepository {
     }
 
     override suspend fun activateTask(task: Task) {
-        val activeTask = Task(task.title, task.description, false, task.id)
+        val activeTask = Task(task.title, task.description, false, task.priority, task.id)
         tasksServiceData[task.id] = activeTask
     }
 

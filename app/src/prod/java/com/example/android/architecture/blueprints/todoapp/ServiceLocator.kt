@@ -26,6 +26,9 @@ import com.example.android.architecture.blueprints.todoapp.data.source.local.Tas
 import com.example.android.architecture.blueprints.todoapp.data.source.local.ToDoDatabase
 import com.example.android.architecture.blueprints.todoapp.data.source.remote.TasksRemoteDataSource
 import kotlinx.coroutines.runBlocking
+import okhttp3.OkHttpClient
+import retrofit2.Retrofit
+import retrofit2.converter.gson.GsonConverterFactory
 
 /**
  * A Service Locator for the [TasksRepository]. This is the prod version, with a
@@ -35,6 +38,7 @@ object ServiceLocator {
 
     private val lock = Any()
     private var database: ToDoDatabase? = null
+
     @Volatile
     var tasksRepository: TasksRepository? = null
         @VisibleForTesting set
@@ -47,7 +51,7 @@ object ServiceLocator {
 
     private fun createTasksRepository(context: Context): TasksRepository {
         val newRepo =
-            DefaultTasksRepository(TasksRemoteDataSource, createTaskLocalDataSource(context))
+                DefaultTasksRepository(createTaskRemoteDataSource(), createTaskLocalDataSource(context))
         tasksRepository = newRepo
         return newRepo
     }
@@ -57,11 +61,21 @@ object ServiceLocator {
         return TasksLocalDataSource(database.taskDao())
     }
 
+    private fun createTaskRemoteDataSource(): TasksDataSource {
+        return TasksRemoteDataSource()
+    }
+
+    /**
+     * This creates teh database using Room
+     * Comment back in the migration for users that need to upgrade their apps
+     */
     private fun createDataBase(context: Context): ToDoDatabase {
         val result = Room.databaseBuilder(
-            context.applicationContext,
-            ToDoDatabase::class.java, DB_NAME
-        ).build()
+                context.applicationContext,
+                ToDoDatabase::class.java, DB_NAME
+        )
+                //.addMigrations(MIGRATION_1_2)
+                .build()
         database = result
         return result
     }
@@ -70,7 +84,7 @@ object ServiceLocator {
     fun resetRepository() {
         synchronized(lock) {
             runBlocking {
-                TasksRemoteDataSource.deleteAllTasks()
+                tasksRepository?.deleteAllTasks()
             }
             // Clear all data to avoid test pollution.
             database?.apply {
@@ -80,6 +94,20 @@ object ServiceLocator {
             database = null
             tasksRepository = null
         }
+    }
+
+    private const val BASE_URL = "http://tunein-android-challenge.herokuapp.com/"
+
+    private val client = OkHttpClient.Builder().build()
+
+    private val retrofit = Retrofit.Builder()
+            .baseUrl(BASE_URL)
+            .addConverterFactory(GsonConverterFactory.create())
+            .client(client)
+            .build()
+
+    fun <T> buildService(service: Class<T>): T {
+        return retrofit.create(service)
     }
 }
 
