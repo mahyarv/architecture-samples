@@ -97,6 +97,7 @@ class AddEditTaskFragmentTest {
         // WHEN - Valid title and description combination and click save
         onView(withId(R.id.add_task_title_edit_text)).perform(replaceText("title"))
         onView(withId(R.id.add_task_description_edit_text)).perform(replaceText("description"))
+        onView(withId(R.id.priority_option_low)).perform(click())
         onView(withId(R.id.save_task_fab)).perform(click())
 
         // THEN - Verify that we navigated back to the tasks screen.
@@ -126,6 +127,7 @@ class AddEditTaskFragmentTest {
         // WHEN - Valid title and description combination and click save
         onView(withId(R.id.add_task_title_edit_text)).perform(replaceText("title"))
         onView(withId(R.id.add_task_description_edit_text)).perform(replaceText("description"))
+        onView(withId(R.id.priority_option_low)).perform(click())
         onView(withId(R.id.save_task_fab)).perform(click())
 
         // THEN - Verify that the repository saved the task
