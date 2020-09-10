@@ -14,6 +14,27 @@ In this branch you'll find:
 *   Two **product flavors**, `mock` and `prod`, [to ease development and testing](https://android-developers.googleblog.com/2015/12/leveraging-product-flavors-in-android.html) (except in the Dagger branch).
 *   A collection of unit, integration and e2e **tests**, including "shared" tests that can be run on emulator/device or Robolectric.
 
+**New Features in this branch:**
+*   Added priority field to the Task models (Low, Medium, High)
+*   Added ability to sort Tasks by priority, alphabetically, or default (time of entry)
+*   Added ability to **one-way** sync the local tasks to a remote server
+*   Added Unit tests for changes
+*   Added UI tests for changes
+
+**Future Improvements & Current Limitations**
+*   Add specific DB migration steps since a new priority field is added to the Room DB
+*   Enhance the UI to make it visually appealing, using the latest Material Design Guidelines
+*   Add proper **two-way** sync between the local DB and the remote server with error handling and fallback logic
+*   Properly handle user id creation and usage during API calls (need unique identifier, potentially device based)
+*   Properly handle error states between the two data sources and fallback logic for updating local DB from remote
+*   Properly handle network error states and error messages with fallback and retry logic
+*   Add logging for debugging purposes
+*   Add Firebase Crashlytics for crash reporting
+*   Add Analytics of some sort for user behavior and measuring potential KPIs
+*   Add more UI tests for additional sorting and priority logic that was added
+*   Add more Unit tests for ViewModel changes to test all logical paths
+*   Convert older RelativeLayout Views into ConstraintLayout
+
 ## Variations
 
 This project hosts each sample app in separate repository branches. For more information, see the `README.md` file in each branch.
